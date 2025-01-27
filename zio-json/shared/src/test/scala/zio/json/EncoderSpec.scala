@@ -333,32 +333,32 @@ object EncoderSpec extends ZIOSpecDefault {
       suite("toJsonAST")(
         suite("primitives")(
           test("strings") {
-            assert("hello world".toJsonAST)(isRight(equalTo(Json.Str("hello world"))))
+            assert("hello world".toJsonAST)(equalTo(Json.Str("hello world")))
           },
           test("boolean") {
-            assert(true.toJsonAST)(isRight(equalTo(Json.Bool(true)))) &&
-            assert(false.toJsonAST)(isRight(equalTo(Json.Bool(false))))
+            assert(true.toJsonAST)(equalTo(Json.Bool(true))) &&
+            assert(false.toJsonAST)(equalTo(Json.Bool(false)))
           },
           test("char") {
-            assert('c'.toJsonAST)(isRight(equalTo(Json.Str("c"))))
+            assert('c'.toJsonAST)(equalTo(Json.Str("c")))
           },
           test("numerics") {
-            assert((1: Byte).toJsonAST)(isRight(equalTo(Json.Num(1)))) &&
-            assert((1: Short).toJsonAST)(isRight(equalTo(Json.Num(1)))) &&
-            assert((1: Int).toJsonAST)(isRight(equalTo(Json.Num(1)))) &&
-            assert(1L.toJsonAST)(isRight(equalTo(Json.Num(1)))) &&
-            assert(new java.math.BigInteger("1").toJsonAST)(isRight(equalTo(Json.Num(1)))) &&
-            assert(1.0f.toJsonAST)(isRight(equalTo(Json.Num(1.0f)))) &&
-            assert(1.0d.toJsonAST)(isRight(equalTo(Json.Num(1.0))))
+            assert((1: Byte).toJsonAST)(equalTo(Json.Num(1))) &&
+            assert((1: Short).toJsonAST)(equalTo(Json.Num(1))) &&
+            assert((1: Int).toJsonAST)(equalTo(Json.Num(1))) &&
+            assert(1L.toJsonAST)(equalTo(Json.Num(1))) &&
+            assert(new java.math.BigInteger("1").toJsonAST)(equalTo(Json.Num(1))) &&
+            assert(1.0f.toJsonAST)(equalTo(Json.Num(1.0f))) &&
+            assert(1.0d.toJsonAST)(equalTo(Json.Num(1.0)))
           }
         ),
         test("options") {
-          assert((None: Option[Int]).toJsonAST)(isRight(equalTo(Json.Null))) &&
-          assert((Some(1): Option[Int]).toJsonAST)(isRight(equalTo(Json.Num(1))))
+          assert((None: Option[Int]).toJsonAST)(equalTo(Json.Null)) &&
+          assert((Some(1): Option[Int]).toJsonAST)(equalTo(Json.Num(1)))
         },
         test("eithers") {
-          assert((Left(1): Either[Int, Int]).toJsonAST)(isRight(equalTo(Json.Obj(Chunk("Left" -> Json.Num(1)))))) &&
-          assert((Right(1): Either[Int, Int]).toJsonAST)(isRight(equalTo(Json.Obj(Chunk("Right" -> Json.Num(1))))))
+          assert((Left(1): Either[Int, Int]).toJsonAST)(equalTo(Json.Obj(Chunk("Left" -> Json.Num(1))))) &&
+          assert((Right(1): Either[Int, Int]).toJsonAST)(equalTo(Json.Obj(Chunk("Right" -> Json.Num(1)))))
         },
         test("collections") {
           val arrEmpty = Json.Arr()
@@ -366,77 +366,77 @@ object EncoderSpec extends ZIOSpecDefault {
           val objEmpty = Json.Obj()
           val objHW    = Json.Obj("hello" -> Json.Str("world"))
 
-          assert(Chunk[Int]().toJsonAST)(isRight(equalTo(arrEmpty))) &&
-          assert(Chunk(1, 2, 3).toJsonAST)(isRight(equalTo(arr123))) &&
-          assert(NonEmptyChunk(1, 2, 3).toJsonAST)(isRight(equalTo(arr123))) &&
-          assert(List[Int]().toJsonAST)(isRight(equalTo(arrEmpty))) &&
-          assert(List(1, 2, 3).toJsonAST)(isRight(equalTo(arr123))) &&
-          assert(Vector[Int]().toJsonAST)(isRight(equalTo(arrEmpty))) &&
-          assert(Vector(1, 2, 3).toJsonAST)(isRight(equalTo(arr123))) &&
-          assert(Map[String, String]().toJsonAST)(isRight(equalTo(objEmpty))) &&
-          assert(Map("hello" -> "world").toJsonAST)(isRight(equalTo(objHW))) &&
-          assert(Map("hello" -> Some("world"), "goodbye" -> None).toJsonAST)(isRight(equalTo(objHW)))
+          assert(Chunk[Int]().toJsonAST)(equalTo(arrEmpty)) &&
+          assert(Chunk(1, 2, 3).toJsonAST)(equalTo(arr123)) &&
+          assert(NonEmptyChunk(1, 2, 3).toJsonAST)(equalTo(arr123)) &&
+          assert(List[Int]().toJsonAST)(equalTo(arrEmpty)) &&
+          assert(List(1, 2, 3).toJsonAST)(equalTo(arr123)) &&
+          assert(Vector[Int]().toJsonAST)(equalTo(arrEmpty)) &&
+          assert(Vector(1, 2, 3).toJsonAST)(equalTo(arr123)) &&
+          assert(Map[String, String]().toJsonAST)(equalTo(objEmpty)) &&
+          assert(Map("hello" -> "world").toJsonAST)(equalTo(objHW)) &&
+          assert(Map("hello" -> Some("world"), "goodbye" -> None).toJsonAST)(equalTo(objHW))
         },
         test("java.util.UUID") {
           assert(UUID.fromString("e142f1aa-6e9e-4352-adfe-7e6eb9814ccd").toJsonAST)(
-            isRight(equalTo(Json.Str("e142f1aa-6e9e-4352-adfe-7e6eb9814ccd")))
+            equalTo(Json.Str("e142f1aa-6e9e-4352-adfe-7e6eb9814ccd"))
           )
         },
         test("parameterless products") {
           import exampleproducts._
 
-          assert(Parameterless().toJsonAST)(isRight(equalTo(Json.Obj())))
+          assert(Parameterless().toJsonAST)(equalTo(Json.Obj()))
         },
         test("tuples") {
-          assert(("hello", "world").toJsonAST)(isRight(equalTo(Json.Arr(Json.Str("hello"), Json.Str("world")))))
+          assert(("hello", "world").toJsonAST)(equalTo(Json.Arr(Json.Str("hello"), Json.Str("world"))))
         },
         test("products") {
           import exampleproducts._
 
-          assert(OnlyString("foo").toJsonAST)(isRight(equalTo(Json.Obj("s" -> Json.Str("foo"))))) &&
+          assert(OnlyString("foo").toJsonAST)(equalTo(Json.Obj("s" -> Json.Str("foo")))) &&
           assert(CoupleOfThings(-1, Some(10.0f), false).toJsonAST)(
-            isRight(equalTo(Json.Obj("j" -> Json.Num(-1), "f" -> Json.Num(10.0f), "b" -> Json.Bool(false))))
+            equalTo(Json.Obj("j" -> Json.Num(-1), "f" -> Json.Num(10.0f), "b" -> Json.Bool(false)))
           ) &&
           assert(CoupleOfThings(0, None, true).toJsonAST)(
-            isRight(equalTo(Json.Obj("j" -> Json.Num(0), "b" -> Json.Bool(true))))
+            equalTo(Json.Obj("j" -> Json.Num(0), "b" -> Json.Bool(true)))
           ) &&
-          assert(OptionalAndRequired(None, "foo").toJsonAST)(isRight(equalTo(Json.Obj("s" -> Json.Str("foo")))))
+          assert(OptionalAndRequired(None, "foo").toJsonAST)(equalTo(Json.Obj("s" -> Json.Str("foo"))))
         },
         test("sum encoding") {
           import examplesum._
 
-          assert((Child1(): Parent).toJsonAST)(isRight(equalTo(Json.Obj(Chunk("Child1" -> Json.Obj()))))) &&
-          assert((Child2(): Parent).toJsonAST)(isRight(equalTo(Json.Obj(Chunk("Cain" -> Json.Obj())))))
+          assert((Child1(): Parent).toJsonAST)(equalTo(Json.Obj(Chunk("Child1" -> Json.Obj())))) &&
+          assert((Child2(): Parent).toJsonAST)(equalTo(Json.Obj(Chunk("Cain" -> Json.Obj()))))
         },
         test("sum encoding with hint names") {
           import examplesumhintnames._
 
-          assert((Child1(): Parent).toJsonAST)(isRight(equalTo(Json.Obj(Chunk("child1" -> Json.Obj()))))) &&
-          assert((Child2(): Parent).toJsonAST)(isRight(equalTo(Json.Obj(Chunk("Cain" -> Json.Obj())))))
+          assert((Child1(): Parent).toJsonAST)(equalTo(Json.Obj(Chunk("child1" -> Json.Obj())))) &&
+          assert((Child2(): Parent).toJsonAST)(equalTo(Json.Obj(Chunk("Cain" -> Json.Obj()))))
         },
         test("sum alternative encoding") {
           import examplealtsum._
 
-          assert((Child1(): Parent).toJsonAST)(isRight(equalTo(Json.Obj("hint" -> Json.Str("Child1"))))) &&
-          assert((Child2(None): Parent).toJsonAST)(isRight(equalTo(Json.Obj("hint" -> Json.Str("Abel"))))) &&
+          assert((Child1(): Parent).toJsonAST)(equalTo(Json.Obj("hint" -> Json.Str("Child1")))) &&
+          assert((Child2(None): Parent).toJsonAST)(equalTo(Json.Obj("hint" -> Json.Str("Abel")))) &&
           assert((Child2(Some("hello")): Parent).toJsonAST)(
-            (isRight(equalTo(Json.Obj("s" -> Json.Str("hello"), "hint" -> Json.Str("Abel")))))
+            equalTo(Json.Obj("s" -> Json.Str("hello"), "hint" -> Json.Str("Abel")))
           )
         },
         test("sum alternative encoding with hint names") {
           import examplealtsumhintnames._
 
-          assert((Child1(): Parent).toJsonAST)(isRight(equalTo(Json.Obj("hint" -> Json.Str("child1"))))) &&
-          assert((Child2(None): Parent).toJsonAST)(isRight(equalTo(Json.Obj("hint" -> Json.Str("Abel"))))) &&
+          assert((Child1(): Parent).toJsonAST)(equalTo(Json.Obj("hint" -> Json.Str("child1")))) &&
+          assert((Child2(None): Parent).toJsonAST)(equalTo(Json.Obj("hint" -> Json.Str("Abel")))) &&
           assert((Child2(Some("hello")): Parent).toJsonAST)(
-            (isRight(equalTo(Json.Obj("s" -> Json.Str("hello"), "hint" -> Json.Str("Abel")))))
+            equalTo(Json.Obj("s" -> Json.Str("hello"), "hint" -> Json.Str("Abel")))
           )
         },
         test("alias") {
           import exampleproducts._
 
           assert(Aliases(-1, "a").toJsonAST)(
-            isRight(equalTo(Json.Obj("i" -> Json.Num(-1), "f" -> Json.Str("a"))))
+            equalTo(Json.Obj("i" -> Json.Num(-1), "f" -> Json.Str("a")))
           )
         }
       )

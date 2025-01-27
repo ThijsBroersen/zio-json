@@ -113,7 +113,7 @@ object AnnotationsCodecSpec extends ZIOSpecDefault {
 
         assertTrue(
           expectedAST.as[ClassWithFields].toOption.get == expectedObj,
-          expectedObj.toJsonAST.toOption.get == expectedAST
+          expectedObj.toJsonAST == expectedAST
         )
       },
       test("should specify discriminator") {
@@ -132,7 +132,7 @@ object AnnotationsCodecSpec extends ZIOSpecDefault {
 
         assertTrue(
           expectedAST.as[ST].toOption.get == expectedObj,
-          expectedObj.toJsonAST.toOption.get == expectedAST
+          expectedObj.toJsonAST == expectedAST
         )
       },
       test("should prevent extra fields") {
@@ -156,7 +156,7 @@ object AnnotationsCodecSpec extends ZIOSpecDefault {
 
         implicit val codec: JsonCodec[OptionalField] = DeriveJsonCodec.gen
 
-        assertTrue(jsonAST.as[OptionalField].toOption.get == expectedObj, expectedObj.toJsonAST == Right(jsonAST))
+        assertTrue(jsonAST.as[OptionalField].toOption.get == expectedObj, expectedObj.toJsonAST == jsonAST)
       },
       test("do not write empty collections") {
         @jsonExplicitEmptyCollections(false)
@@ -166,7 +166,7 @@ object AnnotationsCodecSpec extends ZIOSpecDefault {
 
         implicit val codec: JsonCodec[EmptySeq] = DeriveJsonCodec.gen
 
-        assertTrue(EmptySeq(Seq.empty).toJsonAST == Right(jsonAST))
+        assertTrue(EmptySeq(Seq.empty).toJsonAST == jsonAST)
       }
     ),
     suite("explicit empty collections")(

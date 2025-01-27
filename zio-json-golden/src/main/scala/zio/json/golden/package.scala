@@ -105,7 +105,6 @@ package object golden {
     gen.sample.forever
       .map(_.value)
       .map(_.toJsonAST)
-      .collectRight
       .take(sampleSize.toLong)
       .runCollect
       .map(jsonElements => GoldenSample(new Json.Arr(jsonElements)))

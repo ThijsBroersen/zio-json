@@ -521,8 +521,8 @@ private lazy val caseObjectEncoder = new JsonEncoder[Any] {
   def unsafeEncode(a: Any, indent: Option[Int], out: Write): Unit =
     out.write("{}")
 
-  override final def toJsonAST(a: Any): Either[String, Json] =
-    Right(Json.Obj(Chunk.empty))
+  override final def toJsonAST(a: Any): Json =
+    Json.Obj(Chunk.empty)
 }
 
 object DeriveJsonDecoder extends JsonDecoderDerivation(JsonCodecConfiguration.default) { self =>
@@ -614,20 +614,20 @@ sealed class JsonEncoderDerivation(config: JsonCodecConfiguration) extends Deriv
           out.write('}')
         }
 
-        override final def toJsonAST(a: A): Either[String, Json] = {
+        override final def toJsonAST(a: A): Json = {
+          Json.Obj(
           fields
-            .foldLeft[Either[String, Chunk[(String, Json)]]](Right(Chunk.empty)) { case (c, field) =>
+            .foldLeft[Chunk[(String, Json)]](Chunk.empty) { case (c, field) =>
               val param = field.p
               val paramValue = param.deref(a)
               field.encodeOrDefault(paramValue)(
                 () =>
-                  c.flatMap { chunk =>
-                    param.typeclass.toJsonAST(paramValue).map(value => chunk :+ field.name -> value)
-                  },
+                    c :+ field.name -> param.typeclass.toJsonAST(paramValue)
+                  ,
                 c
               )
             }
-            .map(Json.Obj.apply)
+          )
         }
       }
     }
@@ -659,9 +659,8 @@ sealed class JsonEncoderDerivation(config: JsonCodecConfiguration) extends Deriv
           JsonEncoder.string.unsafeEncode(typeName, indent, out)
         }
 
-        override final def toJsonAST(a: A): Either[String, Json] = {
+        override final def toJsonAST(a: A): Json = {
           ctx.choose(a) { sub =>
-            Right(
               Json.Str(
                 sub
                   .annotations
@@ -669,7 +668,6 @@ sealed class JsonEncoderDerivation(config: JsonCodecConfiguration) extends Deriv
                     case jsonHint(name) => name
                   }.getOrElse(sub.typeInfo.short)
               )
-            )
           }
         }
       }
@@ -694,9 +692,8 @@ sealed class JsonEncoderDerivation(config: JsonCodecConfiguration) extends Deriv
           }
         }
 
-        final override def toJsonAST(a: A): Either[String, Json] = {
+        final override def toJsonAST(a: A): Json = {
           ctx.choose(a) { sub =>
-            sub.typeclass.toJsonAST(sub.cast(a)).map { inner =>
               val name = sub
                 .annotations
                 .collectFirst {
@@ -705,10 +702,9 @@ sealed class JsonEncoderDerivation(config: JsonCodecConfiguration) extends Deriv
 
               Json.Obj(
                 Chunk(
-                  name -> inner
+                  name -> sub.typeclass.toJsonAST(sub.cast(a))
                 )
               )
-            }
           }
         }
       }
@@ -736,11 +732,11 @@ sealed class JsonEncoderDerivation(config: JsonCodecConfiguration) extends Deriv
           }
         }
 
-        override final def toJsonAST(a: A): Either[String, Json] = {
+        override final def toJsonAST(a: A): Json = {
           ctx.choose(a) { sub =>
-            sub.typeclass.toJsonAST(sub.cast(a)).flatMap {
-              case Json.Obj(fields) => Right(Json.Obj(fields :+ hintField -> Json.Str(getName(sub.annotations, sub.typeInfo.short))))
-              case _                => Left("Subtype is not encoded as an object")
+            sub.typeclass.toJsonAST(sub.cast(a)) match {
+              case Json.Obj(fields) => Json.Obj(fields :+ hintField -> Json.Str(getName(sub.annotations, sub.typeInfo.short)))
+              case _                => sys.error("Subtype is not encoded as an object")
             }
           }
         }

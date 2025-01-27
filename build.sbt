@@ -174,6 +174,7 @@ lazy val zioJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         val work = (1 to i)
           .map(p => s"A$p.unsafeEncode(t._$p, indent, out)")
           .mkString("\n        if (indent.isEmpty) out.write(',') else out.write(\", \")\n        ")
+        val astWork = (1 to i).map(p => s"A$p.toJsonAST(t._$p)").mkString(", ")
 
         s"""implicit def tuple$i[$tparams](implicit $implicits): JsonEncoder[Tuple$i[$tparams]] =
            |    new JsonEncoder[Tuple$i[$tparams]] {
@@ -182,11 +183,14 @@ lazy val zioJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
            |        $work
            |        out.write(']')
            |      }
+           |      def toJsonAST(t: Tuple$i[$tparams]): Json = Json.Arr($astWork)
            |    }""".stripMargin
       }
       IO.write(
         file,
         s"""package zio.json
+           |
+           |import zio.json.ast.Json
            |
            |private[json] trait GeneratedTupleEncoders { this: JsonEncoder.type =>
            |  ${encoders.mkString("\n\n  ")}

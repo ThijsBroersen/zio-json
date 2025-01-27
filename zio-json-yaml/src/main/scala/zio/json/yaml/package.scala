@@ -60,9 +60,9 @@ package object yaml {
 
   implicit final class EncoderYamlOps[A](private val a: A) extends AnyVal {
     def toYaml(options: YamlOptions = YamlOptions.default)(implicit A: JsonEncoder[A]): Either[String, String] =
-      a.toJsonAST.flatMap(_.toYaml(options).left.map(_.getMessage))
-    def toYamlAST(options: YamlOptions = YamlOptions.default)(implicit A: JsonEncoder[A]): Either[String, Node] =
-      a.toJsonAST.map(_.toYamlAST(options))
+      a.toJsonAST.toYaml(options).left.map(_.getMessage)
+    def toYamlAST(options: YamlOptions = YamlOptions.default)(implicit A: JsonEncoder[A]): Node =
+      a.toJsonAST.toYamlAST(options)
   }
 
   implicit final class DecoderYamlOps(private val raw: String) extends AnyVal {

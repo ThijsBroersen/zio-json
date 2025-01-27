@@ -41,7 +41,7 @@ trait JsonEncoder[A] extends JsonEncoderPlatformSpecific[A] {
 
     override def isEmpty(b: B): Boolean = self.isEmpty(f(b))
 
-    override final def toJsonAST(b: B): Either[String, Json] =
+    override final def toJsonAST(b: B): Json =
       self.toJsonAST(f(b))
   }
 
@@ -98,7 +98,7 @@ trait JsonEncoder[A] extends JsonEncoderPlatformSpecific[A] {
    * The default implementation encodes the value to a Json byte stream and uses decode to parse that back to an AST.
    * Override to provide a more performant implementation.
    */
-  def toJsonAST(a: A): Either[String, Json] = Json.decoder.decodeJson(encodeJson(a, None))
+  def toJsonAST(a: A): Json // = Json.decoder.decodeJson(encodeJson(a, None))
 
   /**
    * Returns a new encoder that is capable of encoding a tuple containing the values of this encoder and the specified
@@ -134,8 +134,7 @@ object JsonEncoder extends GeneratedTupleEncoders with EncoderLowPriority1 with 
       out.write('"')
     }
 
-    override final def toJsonAST(a: String): Either[String, Json] =
-      Right(Json.Str(a))
+    override final def toJsonAST(a: String): Json = Json.Str(a)
 
     private[this] def writeEncoded(a: String, out: Write): Unit = {
       val len = a.length
@@ -179,15 +178,13 @@ object JsonEncoder extends GeneratedTupleEncoders with EncoderLowPriority1 with 
       out.write('"')
     }
 
-    override final def toJsonAST(a: Char): Either[String, Json] =
-      Right(Json.Str(a.toString))
+    override final def toJsonAST(a: Char): Json = Json.Str(a.toString)
   }
 
   private[json] def explicit[A](f: A => String, g: A => Json): JsonEncoder[A] = new JsonEncoder[A] {
     def unsafeEncode(a: A, indent: Option[Int], out: Write): Unit = out.write(f(a))
 
-    override final def toJsonAST(a: A): Either[String, Json] =
-      Right(g(a))
+    override final def toJsonAST(a: A): Json = g(a)
   }
 
   private[json] def stringify[A](f: A => String): JsonEncoder[A] = new JsonEncoder[A] {
@@ -197,8 +194,7 @@ object JsonEncoder extends GeneratedTupleEncoders with EncoderLowPriority1 with 
       out.write('"')
     }
 
-    override final def toJsonAST(a: A): Either[String, Json] =
-      Right(Json.Str(f(a)))
+    override final def toJsonAST(a: A): Json = Json.Str(f(a))
   }
 
   def suspend[A](encoder0: => JsonEncoder[A]): JsonEncoder[A] =
@@ -211,7 +207,7 @@ object JsonEncoder extends GeneratedTupleEncoders with EncoderLowPriority1 with 
 
       override def isEmpty(a: A): Boolean = encoder.isEmpty(a)
 
-      override def toJsonAST(a: A): Either[String, Json] = encoder.toJsonAST(a)
+      override def toJsonAST(a: A): Json = encoder.toJsonAST(a)
     }
 
   implicit val boolean: JsonEncoder[Boolean] = explicit(_.toString, Json.Bool.apply)
@@ -244,9 +240,9 @@ object JsonEncoder extends GeneratedTupleEncoders with EncoderLowPriority1 with 
         case Some(a) => A.isNothing(a)
       }
 
-    override final def toJsonAST(oa: Option[A]): Either[String, Json] =
+    override final def toJsonAST(oa: Option[A]): Json =
       oa match {
-        case None    => Right(Json.Null)
+        case None    => Json.Null
         case Some(a) => A.toJsonAST(a)
       }
   }
@@ -300,10 +296,10 @@ object JsonEncoder extends GeneratedTupleEncoders with EncoderLowPriority1 with 
         pad(indent, out)
       }
 
-      override final def toJsonAST(eab: Either[A, B]): Either[String, Json] =
+      override final def toJsonAST(eab: Either[A, B]): Json =
         eab match {
-          case Left(a)  => A.toJsonAST(a).map(v => Json.Obj(Chunk.single("Left" -> v)))
-          case Right(b) => B.toJsonAST(b).map(v => Json.Obj(Chunk.single("Right" -> v)))
+          case Left(a)  => Json.Obj(Chunk.single("Left" -> A.toJsonAST(a)))
+          case Right(b) => Json.Obj(Chunk.single("Right" -> B.toJsonAST(b)))
         }
     }
 
@@ -313,6 +309,12 @@ object JsonEncoder extends GeneratedTupleEncoders with EncoderLowPriority1 with 
         eab match {
           case Left(a)  => A.unsafeEncode(a, indent, out)
           case Right(b) => B.unsafeEncode(b, indent, out)
+        }
+
+      override final def toJsonAST(eab: Either[A, B]): Json =
+        eab match {
+          case Left(a)  => A.toJsonAST(a)
+          case Right(b) => B.toJsonAST(b)
         }
     }
 }
@@ -363,12 +365,13 @@ private[json] trait EncoderLowPriority1 extends EncoderLowPriority2 {
         pad(indent, out)
       }
 
-      override final def toJsonAST(as: Array[A]): Either[String, Json] =
-        as.map(A.toJsonAST)
-          .foldLeft[Either[String, Chunk[Json]]](Right(Chunk.empty)) { (s, i) =>
-            s.flatMap(chunk => i.map(item => chunk :+ item))
-          }
-          .map(Json.Arr(_))
+      override final def toJsonAST(as: Array[A]): Json =
+        Json.Arr(
+          as.map(A.toJsonAST)
+            .foldLeft[Chunk[Json]](Chunk.empty) { (s, i) =>
+              s :+ i
+            }
+        )
     }
 
   implicit def seq[A: JsonEncoder]: JsonEncoder[Seq[A]] = iterable[A, Seq]
@@ -458,12 +461,13 @@ private[json] trait EncoderLowPriority2 extends EncoderLowPriority3 {
         pad(indent, out)
       }
 
-      override final def toJsonAST(as: T[A]): Either[String, Json] =
-        as.map(A.toJsonAST)
-          .foldLeft[Either[String, Chunk[Json]]](Right(Chunk.empty)) { (s, i) =>
-            s.flatMap(chunk => i.map(item => chunk :+ item))
-          }
-          .map(Json.Arr(_))
+      override final def toJsonAST(as: T[A]): Json =
+        Json.Arr(
+          as.map(A.toJsonAST)
+            .foldLeft[Chunk[Json]](Chunk.empty) { (s, i) =>
+              s :+ i
+            }
+        )
     }
 
   // not implicit because this overlaps with encoders for lists of tuples
@@ -516,16 +520,16 @@ private[json] trait EncoderLowPriority2 extends EncoderLowPriority3 {
       pad(indent, out)
     }
 
-    override final def toJsonAST(kvs: T[K, A]): Either[String, Json] =
-      kvs
-        .foldLeft[Either[String, Chunk[(String, Json)]]](Right(Chunk.empty)) { case (s, (k, v)) =>
-          for {
-            chunk <- s
-            key    = K.unsafeEncodeField(k)
-            value <- A.toJsonAST(v)
-          } yield if (value == Json.Null) chunk else chunk :+ (key -> value)
-        }
-        .map(Json.Obj(_))
+    override final def toJsonAST(kvs: T[K, A]): Json =
+      Json.Obj(
+        kvs
+          .foldLeft[Chunk[(String, Json)]](Chunk.empty) { case (s, (k, v)) =>
+            val chunk = s
+            val key   = K.unsafeEncodeField(k)
+            val value = A.toJsonAST(v)
+            if (value == Json.Null) chunk else chunk :+ (key -> value)
+          }
+      )
   }
 
   // not implicit because this overlaps with encoders for lists of tuples

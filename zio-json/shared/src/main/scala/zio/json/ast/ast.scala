@@ -396,7 +396,7 @@ object Json {
       def unsafeEncode(a: Obj, indent: Option[Int], out: Write): Unit =
         obje.unsafeEncode(a.fields, indent, out)
 
-      override final def toJsonAST(a: Obj): Either[String, Json] = Right(a)
+      override final def toJsonAST(a: Obj): Json = a
     }
 
     implicit val codec: JsonCodec[Obj] = JsonCodec(encoder, decoder)
@@ -443,7 +443,7 @@ object Json {
       def unsafeEncode(a: Arr, indent: Option[Int], out: Write): Unit =
         arre.unsafeEncode(a.elements, indent, out)
 
-      override final def toJsonAST(a: Arr): Either[String, Json] = Right(a)
+      override final def toJsonAST(a: Arr): Json = a
     }
 
     implicit val codec: JsonCodec[Arr] = JsonCodec(encoder, decoder)
@@ -471,7 +471,7 @@ object Json {
       def unsafeEncode(a: Bool, indent: Option[Int], out: Write): Unit =
         JsonEncoder.boolean.unsafeEncode(a.value, indent, out)
 
-      override final def toJsonAST(a: Bool): Either[String, Json] = Right(a)
+      override final def toJsonAST(a: Bool): Json = a
     }
 
     implicit val codec: JsonCodec[Bool] = JsonCodec(encoder, decoder)
@@ -495,7 +495,7 @@ object Json {
       def unsafeEncode(a: Str, indent: Option[Int], out: Write): Unit =
         JsonEncoder.string.unsafeEncode(a.value, indent, out)
 
-      override final def toJsonAST(a: Str): Either[String, Json] = Right(a)
+      override final def toJsonAST(a: Str): Json = a
     }
 
     implicit val codec: JsonCodec[Str] = JsonCodec(encoder, decoder)
@@ -527,7 +527,7 @@ object Json {
       def unsafeEncode(a: Num, indent: Option[Int], out: Write): Unit =
         JsonEncoder.bigDecimal.unsafeEncode(a.value, indent, out)
 
-      override final def toJsonAST(a: Num): Either[String, Num] = Right(a)
+      override final def toJsonAST(a: Num): Json = a
     }
 
     implicit val codec: JsonCodec[Num] = JsonCodec(encoder, decoder)
@@ -551,7 +551,7 @@ object Json {
       def unsafeEncode(a: Null.type, indent: Option[Int], out: Write): Unit =
         out.write("null")
 
-      override final def toJsonAST(a: Null.type): Either[String, Json] = Right(a)
+      override final def toJsonAST(a: Null.type): Json = a
     }
 
     implicit val codec: JsonCodec[Null.type] = JsonCodec(encoder, decoder)
@@ -590,7 +590,7 @@ object Json {
         case Null    => Null.encoder.unsafeEncode(Null, indent, out)
       }
 
-    override final def toJsonAST(a: Json): Either[String, Json] = Right(a)
+    override final def toJsonAST(a: Json): Json = a
   }
 
   implicit val codec: JsonCodec[Json] = JsonCodec(encoder, decoder)

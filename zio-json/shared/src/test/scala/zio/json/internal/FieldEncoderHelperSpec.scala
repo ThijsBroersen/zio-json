@@ -118,7 +118,7 @@ object FieldEncoderSpec extends ZIOSpecDefault {
           )
           val expected = Chunk(("a", Json.Bool.True))
           assertTrue(
-            helper.encodeOrDefault(None)(() => Left(""), Right(expected)) == Right(expected)
+            helper.encodeOrDefault(None)(() => Chunk.empty, expected) == expected
           )
         },
         test("should encode None when withExplicitNulls is true") {
@@ -131,7 +131,7 @@ object FieldEncoderSpec extends ZIOSpecDefault {
           )
           val expected = Chunk(("a", Json.Bool.True))
           assertTrue(
-            helper.encodeOrDefault(None)(() => Right(expected), Left("")) == Right(expected)
+            helper.encodeOrDefault(None)(() => expected, Chunk.empty) == expected
           )
         }
       ),
@@ -146,7 +146,7 @@ object FieldEncoderSpec extends ZIOSpecDefault {
           )
           val expected = Chunk(("a", Json.Bool.True))
           assertTrue(
-            helper.encodeOrDefault(Nil)(() => Right(expected), Left("")) == Right(expected)
+            helper.encodeOrDefault(Nil)(() => expected, Chunk.empty) == expected
           )
         },
         test("should not encode empty collections when withExplicitEmptyCollections is false") {
@@ -159,7 +159,7 @@ object FieldEncoderSpec extends ZIOSpecDefault {
           )
           val expected = Chunk(("a", Json.Bool.True))
           assertTrue(
-            helper.encodeOrDefault(Nil)(() => Left(""), Right(expected)) == Right(expected)
+            helper.encodeOrDefault(Nil)(() => Chunk.empty, expected) == expected
           )
         }
       ),
@@ -176,9 +176,9 @@ object FieldEncoderSpec extends ZIOSpecDefault {
           val expected = Chunk(("a", Json.Bool.True))
           assertTrue(
             helper.encodeOrDefault(Test(Nil, None))(
-              () => Right(expected),
-              Left("")
-            ) == Right(expected)
+              () => expected,
+              Chunk.empty
+            ) == expected
           )
         },
         test("should not encode case classes with empty collections when withExplicitEmptyCollections is false") {
@@ -192,7 +192,10 @@ object FieldEncoderSpec extends ZIOSpecDefault {
           )
           val expected = Chunk(("a", Json.Bool.True))
           assertTrue(
-            helper.encodeOrDefault(Test(Nil, None))(() => Left(""), Right(expected)) == Right(expected)
+            helper.encodeOrDefault(Test(Nil, None))(
+              () => Chunk.empty,
+              expected
+            ) == expected
           )
         },
         test(
@@ -209,9 +212,9 @@ object FieldEncoderSpec extends ZIOSpecDefault {
           val expected = Chunk(("a", Json.Bool.True))
           assertTrue(
             helper.encodeOrDefault(Test(Nil, None))(
-              () => Left(""),
-              Right(expected)
-            ) == Right(expected)
+              () => Chunk.empty,
+              expected
+            ) == expected
           )
         }
       )

@@ -118,7 +118,7 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
 
         assertTrue(
           expectedAST.as[ClassWithFields].toOption.get == expectedObj,
-          expectedObj.toJsonAST.toOption.get == expectedAST
+          expectedObj.toJsonAST == expectedAST
         )
       },
       test("should not use discriminator by default") {
@@ -129,7 +129,7 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
 
         assertTrue(
           expectedAST.as[ST].toOption.get == expectedObj,
-          expectedObj.toJsonAST.toOption.get == expectedAST
+          expectedObj.toJsonAST == expectedAST
         )
       },
       test("should allow extra fields by default") {
@@ -150,7 +150,7 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
 
         assertTrue(
           jsonAST.as[OptionalField].toOption.get == expectedObj,
-          expectedObj.toJsonAST == Right(jsonAST)
+          expectedObj.toJsonAST == jsonAST
         )
       },
       test("write empty collections by default") {
@@ -168,8 +168,8 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
         implicit val emptySeqCodec: JsonCodec[EmptySeq] = DeriveJsonCodec.gen
 
         assertTrue(
-          expectedObj.toJsonAST == Right(expectedObjJson),
-          expectedSeq.toJsonAST == Right(expectedSeqJson),
+          expectedObj.toJsonAST == expectedObjJson,
+          expectedSeq.toJsonAST == expectedSeqJson,
           expectedObjJson.as[EmptyObj] == Right(expectedObj),
           expectedSeqJson.as[EmptySeq] == Right(expectedSeq)
         )
@@ -306,7 +306,7 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
 
         assertTrue(
           expectedAST.as[ClassWithFields].toOption.get == expectedObj,
-          expectedObj.toJsonAST.toOption.get == expectedAST
+          expectedObj.toJsonAST == expectedAST
         )
       },
       test("should specify discriminator") {
@@ -319,7 +319,7 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
 
         assertTrue(
           expectedAST.as[ST].toOption.get == expectedObj,
-          expectedObj.toJsonAST.toOption.get == expectedAST
+          expectedObj.toJsonAST == expectedAST
         )
       },
       test("should prevent extra fields") {
@@ -341,7 +341,7 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
           JsonCodecConfiguration(explicitNulls = true)
         implicit val codec: JsonCodec[OptionalField] = DeriveJsonCodec.gen
 
-        assertTrue(jsonAST.as[OptionalField].toOption.get == expectedObj, expectedObj.toJsonAST == Right(jsonAST))
+        assertTrue(jsonAST.as[OptionalField].toOption.get == expectedObj, expectedObj.toJsonAST == jsonAST)
       },
       test("fail on decoding missing explicit nulls") {
         val jsonStr = """{}"""
@@ -369,8 +369,8 @@ object ConfigurableDeriveCodecSpec extends ZIOSpecDefault {
         implicit val emptySeqCodec: JsonCodec[EmptySeq] = DeriveJsonCodec.gen
 
         assertTrue(
-          expectedEmptyObj.toJsonAST == Right(expectedJson),
-          expectedEmptySeq.toJsonAST == Right(expectedJson),
+          expectedEmptyObj.toJsonAST == expectedJson,
+          expectedEmptySeq.toJsonAST == expectedJson,
           expectedJson.as[EmptyObj] == Right(expectedEmptyObj),
           expectedJson.as[EmptySeq] == Right(expectedEmptySeq)
         )

@@ -11,7 +11,7 @@ object YamlEncoderSpec extends ZIOSpecDefault {
   val spec: Spec[Environment, Any] =
     suite("YamlEncoderSpec")(
       test("object root") {
-        assert(ex1.toJsonAST.flatMap(_.toYaml(YamlOptions.default.copy(lineBreak = LineBreak.UNIX))))(
+        assert(ex1.toJsonAST.toYaml(YamlOptions.default.copy(lineBreak = LineBreak.UNIX)))(
           isRight(equalTo(ex1Yaml))
         )
       },
@@ -81,13 +81,11 @@ object YamlEncoderSpec extends ZIOSpecDefault {
       },
       test("indentation settings") {
         assert(
-          ex1.toJsonAST.flatMap(
-            _.toYaml(
-              YamlOptions.default.copy(
-                indentation = 4,
-                sequenceIndentation = 0,
-                lineBreak = LineBreak.UNIX
-              )
+          ex1.toJsonAST.toYaml(
+            YamlOptions.default.copy(
+              indentation = 4,
+              sequenceIndentation = 0,
+              lineBreak = LineBreak.UNIX
             )
           )
         )(

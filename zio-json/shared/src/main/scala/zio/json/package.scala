@@ -24,7 +24,7 @@ package object json extends JsonPackagePlatformSpecific {
     // Jon Pretty's better looking brother, but a bit slower
     def toJsonPretty(implicit encoder: JsonEncoder[A]): String = encoder.encodeJson(a, Some(0)).toString
 
-    def toJsonAST(implicit encoder: JsonEncoder[A]): Either[String, Json] = encoder.toJsonAST(a)
+    def toJsonAST(implicit encoder: JsonEncoder[A]): Json = encoder.toJsonAST(a)
   }
 
   implicit final class DecoderOps(private val json: CharSequence) extends AnyVal {

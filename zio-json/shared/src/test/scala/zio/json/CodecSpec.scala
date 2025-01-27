@@ -121,17 +121,17 @@ object CodecSpec extends ZIOSpecDefault {
           assert(cameled.fromJson[Cameled])(isRight(equalTo(Cameled("")))) &&
           assert(overrides.fromJson[OverridesAlsoWork])(isRight(equalTo(OverridesAlsoWork("", 0)))) &&
           assertTrue(Kebabed("").toJson == kebabed) &&
-          assertTrue(Kebabed("").toJsonAST.toOption.get == kebabed.fromJson[Json].toOption.get) &&
+          assertTrue(Kebabed("").toJsonAST == kebabed.fromJson[Json].toOption.get) &&
           assertTrue(legacy.Kebabed("").toJson == kebabedLegacy) &&
-          assertTrue(legacy.Kebabed("").toJsonAST.toOption.get == kebabedLegacy.fromJson[Json].toOption.get) &&
+          assertTrue(legacy.Kebabed("").toJsonAST == kebabedLegacy.fromJson[Json].toOption.get) &&
           assertTrue(Snaked("").toJson == snaked) &&
-          assertTrue(Snaked("").toJsonAST.toOption.get == snaked.fromJson[Json].toOption.get) &&
+          assertTrue(Snaked("").toJsonAST == snaked.fromJson[Json].toOption.get) &&
           assertTrue(legacy.Snaked("").toJson == snakedLegacy) &&
-          assertTrue(legacy.Snaked("").toJsonAST.toOption.get == snakedLegacy.fromJson[Json].toOption.get) &&
+          assertTrue(legacy.Snaked("").toJsonAST == snakedLegacy.fromJson[Json].toOption.get) &&
           assertTrue(Pascaled("").toJson == pascaled) &&
-          assertTrue(Pascaled("").toJsonAST.toOption.get == pascaled.fromJson[Json].toOption.get) &&
+          assertTrue(Pascaled("").toJsonAST == pascaled.fromJson[Json].toOption.get) &&
           assertTrue(Cameled("").toJson == cameled) &&
-          assertTrue(Cameled("").toJsonAST.toOption.get == cameled.fromJson[Json].toOption.get) &&
+          assertTrue(Cameled("").toJsonAST == cameled.fromJson[Json].toOption.get) &&
           assertTrue(OverridesAlsoWork("", 0).toJson == overrides)
         },
         test("key transformation - except native") {
@@ -143,7 +143,7 @@ object CodecSpec extends ZIOSpecDefault {
 
           assert(indianaJones.fromJson[Custom])(isRight(equalTo(Custom("")))) &&
           assertTrue(Custom("").toJson == indianaJones) &&
-          assertTrue(Custom("").toJsonAST.toOption.get == indianaJones.fromJson[Json].toOption.get)
+          assertTrue(Custom("").toJsonAST == indianaJones.fromJson[Json].toOption.get)
         } @@ TestAspect.exceptNative,
         test("unicode") {
           assert(""""€🐵🥰"""".fromJson[String])(isRight(equalTo("€🐵🥰")))

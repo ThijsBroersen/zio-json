@@ -487,8 +487,8 @@ object DeriveJsonEncoder {
 
         def unsafeEncode(a: A, indent: Option[Int], out: Write): Unit = out.write("{}")
 
-        override final def toJsonAST(a: A): Either[String, Json] =
-          Right(Json.Obj(Chunk.empty))
+        override final def toJsonAST(a: A): Json =
+          Json.Obj(Chunk.empty)
       }
     else
       new JsonEncoder[A] {
@@ -559,20 +559,18 @@ object DeriveJsonEncoder {
           out.write('}')
         }
 
-        override final def toJsonAST(a: A): Either[String, Json] =
-          fields
-            .foldLeft[Either[String, Chunk[(String, Json)]]](Right(Chunk.empty)) { case (c, field) =>
-              val param      = field.p
-              val paramValue = field.p.dereference(a).asInstanceOf[param.PType]
-              field.encodeOrDefault(paramValue)(
-                () =>
-                  c.flatMap { chunk =>
-                    param.typeclass.toJsonAST(paramValue).map(value => chunk :+ field.name -> value)
-                  },
-                c
-              )
-            }
-            .map(Json.Obj.apply)
+        override final def toJsonAST(a: A): Json =
+          Json.Obj(
+            fields
+              .foldLeft[Chunk[(String, Json)]](Chunk.empty) { case (c, field) =>
+                val param      = field.p
+                val paramValue = field.p.dereference(a).asInstanceOf[param.PType]
+                field.encodeOrDefault(paramValue)(
+                  () => c :+ field.name -> param.typeclass.toJsonAST(paramValue),
+                  c
+                )
+              }
+          )
       }
 
   def split[A](ctx: SealedTrait[JsonEncoder, A])(implicit config: JsonCodecConfiguration): JsonEncoder[A] = {
@@ -599,15 +597,13 @@ object DeriveJsonEncoder {
           out.write('}')
         }
 
-        override def toJsonAST(a: A): Either[String, Json] =
+        override def toJsonAST(a: A): Json =
           ctx.split(a) { sub =>
-            sub.typeclass.toJsonAST(sub.cast(a)).map { inner =>
-              Json.Obj(
-                Chunk(
-                  names(sub.index) -> inner
-                )
+            Json.Obj(
+              Chunk(
+                names(sub.index) -> sub.typeclass.toJsonAST(sub.cast(a))
               )
-            }
+            )
           }
       }
     } else {
@@ -627,11 +623,11 @@ object DeriveJsonEncoder {
           sub.typeclass.unsafeEncode(sub.cast(a), indent, intermediate)
         }
 
-        override def toJsonAST(a: A): Either[String, Json] =
+        override def toJsonAST(a: A): Json =
           ctx.split(a) { sub =>
-            sub.typeclass.toJsonAST(sub.cast(a)).flatMap {
-              case Json.Obj(fields) => Right(Json.Obj(fields :+ hintfield -> Json.Str(names(sub.index))))
-              case _                => Left("Subtype is not encoded as an object")
+            sub.typeclass.toJsonAST(sub.cast(a)) match {
+              case Json.Obj(fields) => Json.Obj(fields :+ hintfield -> Json.Str(names(sub.index)))
+              case _                => sys.error("Subtype is not encoded as an object")
             }
           }
       }

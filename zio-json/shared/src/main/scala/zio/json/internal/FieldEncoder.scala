@@ -24,9 +24,9 @@ private[json] class FieldEncoder[T, P](
   def encodeOrSkip(t: T)(encode: () => Unit): Unit = _encodeOrSkip(t)(encode)
 
   private[this] val _encodeOrDefault: T => (
-    Either[String, Chunk[(String, Json)]],
-    () => Either[String, Chunk[(String, Json)]]
-  ) => Either[String, Chunk[(String, Json)]] =
+    Chunk[(String, Json)],
+    () => Chunk[(String, Json)]
+  ) => Chunk[(String, Json)] =
     if (withExplicitNulls && withExplicitEmptyCollections) { _ => (_, encode) =>
       encode()
     } else if (withExplicitNulls) { t => (default, encode) =>
@@ -37,8 +37,8 @@ private[json] class FieldEncoder[T, P](
       if (!encoder.isEmpty(t) && !encoder.isNothing(t)) encode() else default
     }
   def encodeOrDefault(t: T)(
-    encode: () => Either[String, Chunk[(String, Json)]],
-    default: Either[String, Chunk[(String, Json)]]
-  ): Either[String, Chunk[(String, Json)]] =
+    encode: () => Chunk[(String, Json)],
+    default: Chunk[(String, Json)]
+  ): Chunk[(String, Json)] =
     _encodeOrDefault(t)(default, encode)
 }
