@@ -334,9 +334,9 @@ lazy val zioJsonInteropHttp4s = project
       "org.http4s"    %% "http4s-dsl"       % "0.23.32",
       "dev.zio"       %% "zio"              % zioVersion,
       "org.typelevel" %% "cats-effect"      % "3.6.3",
-      "dev.zio"       %% "zio-interop-cats" % "23.1.0.5" % "test",
-      "dev.zio"       %% "zio-test"         % zioVersion % "test",
-      "dev.zio"       %% "zio-test-sbt"     % zioVersion % "test"
+      "dev.zio"       %% "zio-interop-cats" % "23.1.0.12" % "test",
+      "dev.zio"       %% "zio-test"         % zioVersion  % "test",
+      "dev.zio"       %% "zio-test-sbt"     % zioVersion  % "test"
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
