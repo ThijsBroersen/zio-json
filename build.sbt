@@ -58,7 +58,7 @@ addCommandAlias(
   "zioJsonMacrosNative/test"
 )
 
-val zioVersion = "2.1.22"
+val zioVersion = "2.1.25"
 
 lazy val zioJsonRoot = project
   .in(file("."))
