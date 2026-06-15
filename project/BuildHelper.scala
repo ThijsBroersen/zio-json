@@ -286,7 +286,7 @@ object BuildHelper {
     }
   )
 
-  val scalaJavaTimeVersion = "2.6.0"
+  val scalaJavaTimeVersion = "2.7.0"
 
   def nativeSettings = Seq(
     nativeConfig ~= { cfg =>
